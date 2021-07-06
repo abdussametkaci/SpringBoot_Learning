@@ -2,7 +2,6 @@ package com.tutorial.springboot.demo.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.tutorial.springboot.demo.model.Bank
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -13,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.*
-import java.awt.PageAttributes
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -177,6 +175,42 @@ internal class BankControllerTest @Autowired constructor(
             performPatchRequest
                 .andDo { print() }
                 .andExpect { status { isNotFound() } }
+        }
+    }
+
+    @Nested
+    @DisplayName("Delete /api/banks/{accountNumber}")
+    @TestInstance(Lifecycle.PER_CLASS)
+    inner class DeleteExistingBank {
+        
+        @Test
+        fun `should delete the bank with the given account number`() {
+            // given
+            val accountNumber = 1234
+            // when/then
+            mockMvc.delete("$baseURL/$accountNumber")
+                .andDo { print() }
+                .andExpect {
+                    status { isNoContent() }
+                }
+
+            mockMvc.get("$baseURL/$accountNumber")
+                .andExpect {
+                    status { isNotFound() }
+                }
+        }
+        
+        @Test
+        fun `should return NOT FOUND if no bank with given account number exists`() {
+            // given
+            val invalidAccountNumber = "does_not_exist"
+            // when/then
+            mockMvc.delete("$baseURL/$invalidAccountNumber")
+                .andDo { print() }
+                .andExpect {
+                    status { isNotFound() }
+                }
+            
         }
     }
 
